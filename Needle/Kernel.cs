@@ -12,12 +12,13 @@ namespace Needle {
         /// <remarks>
         /// This kernel is created lazily; only use this
         /// if you don't want to define your own context.
+        /// Not currently thread-safe.
         /// </remarks>
         public static Kernel Current {
-            get {
-                throw new NotImplementedException();
-            }
+            get { return _current ?? (_current = new Kernel()); }
         }
+
+        private static Kernel _current;
 
         private readonly Dictionary<Type, object> _rules = new Dictionary<Type, object>();
 
