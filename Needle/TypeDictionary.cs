@@ -7,13 +7,16 @@ namespace Needle {
     /// </summary>
     internal class TypeDictionary {
         private readonly Dictionary<Type, object> _values = new Dictionary<Type, object>();
+        private readonly ReadWriteLock _lock = new ReadWriteLock();
 
         /// <summary>
         /// Checks whether a value of the specified type
         /// is found in the dictionary.
         /// </summary>
         public bool ContainsKey<TValue>() {
-            return _values.ContainsKey(typeof (TValue));
+            using (_lock.Read()) {
+                return _values.ContainsKey(typeof (TValue));
+            }
         }
 
         /// <summary>
@@ -25,8 +28,7 @@ namespace Needle {
                 return value;
             }
             else {
-                throw new ArgumentException(string.Format("No such value ({0}) exists in the dictionary.",
-                    typeof (TValue)));
+                throw new ArgumentException(string.Format("No such value ({0}) exists in the dictionary.", typeof (TValue)));
             }
         }
 
@@ -35,7 +37,9 @@ namespace Needle {
         /// replacing any existing value.
         /// </summary>
         public void Set<TValue>(TValue value) {
-            _values.Add(typeof (TValue), value);
+            using (_lock.Write()) {
+                _values.Add(typeof (TValue), value);
+            }
         }
 
         /// <summary>
@@ -43,14 +47,16 @@ namespace Needle {
         /// if it is present.
         /// </summary>
         public bool TryGet<TValue>(out TValue value) {
-            var type = typeof (TValue);
-            if (_values.ContainsKey(type)) {
-                value = (TValue) _values[type];
-                return true;
-            }
-            else {
-                value = default(TValue);
-                return false;
+            using (_lock.Read()) {
+                var type = typeof (TValue);
+                if (_values.ContainsKey(type)) {
+                    value = (TValue) _values[type];
+                    return true;
+                }
+                else {
+                    value = default(TValue);
+                    return false;
+                }
             }
         }
     }
