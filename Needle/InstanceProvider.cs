@@ -5,7 +5,8 @@ namespace Needle {
     /// Provides instances of a concrete implementation based on
     /// </summary>
     internal class InstanceProvider {
-        private readonly TypeDictionary _singletons = new TypeDictionary();
+        private static readonly TypeDictionary _singletons = new TypeDictionary();
+        private static readonly ReadWriteLock _singletonsLock = new ReadWriteLock();
 
         /// <summary>
         /// Gets an instance of the specified concrete implementation
@@ -39,7 +40,21 @@ namespace Needle {
         /// Returns a single shared instance of the specified type.
         /// </summary>
         private TImplementation GetSingleton<TImplementation>() where TImplementation : new() {
-            throw new NotImplementedException();
+            TImplementation impl;
+            using (_singletonsLock.Read()) {
+                if (_singletons.TryGet(out impl)) {
+                    return impl;
+                }
+            }
+
+            using (_singletonsLock.Write()) {
+                if (!_singletons.TryGet(out impl)) {
+                    impl = new TImplementation();
+                    _singletons.Add(impl);
+                }
+            }
+
+            return impl;
         }
 
         /// <summary>

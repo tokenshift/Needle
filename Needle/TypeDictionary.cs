@@ -7,16 +7,21 @@ namespace Needle {
     /// </summary>
     internal class TypeDictionary {
         private readonly Dictionary<Type, object> _values = new Dictionary<Type, object>();
-        private readonly ReadWriteLock _lock = new ReadWriteLock();
+
+        /// <summary>
+        /// Adds the specified value to the dictionary,
+        /// replacing any existing value.
+        /// </summary>
+        public void Add<TValue>(TValue value) {
+            _values.Add(typeof (TValue), value);
+        }
 
         /// <summary>
         /// Checks whether a value of the specified type
         /// is found in the dictionary.
         /// </summary>
         public bool ContainsKey<TValue>() {
-            using (_lock.Read()) {
-                return _values.ContainsKey(typeof (TValue));
-            }
+            return _values.ContainsKey(typeof (TValue));
         }
 
         /// <summary>
@@ -33,30 +38,18 @@ namespace Needle {
         }
 
         /// <summary>
-        /// Adds the specified value to the dictionary,
-        /// replacing any existing value.
-        /// </summary>
-        public void Set<TValue>(TValue value) {
-            using (_lock.Write()) {
-                _values.Add(typeof (TValue), value);
-            }
-        }
-
-        /// <summary>
         /// Gets the specified value from the dictionary,
         /// if it is present.
         /// </summary>
         public bool TryGet<TValue>(out TValue value) {
-            using (_lock.Read()) {
-                var type = typeof (TValue);
-                if (_values.ContainsKey(type)) {
-                    value = (TValue) _values[type];
-                    return true;
-                }
-                else {
-                    value = default(TValue);
-                    return false;
-                }
+            var type = typeof (TValue);
+            if (_values.ContainsKey(type)) {
+                value = (TValue) _values[type];
+                return true;
+            }
+            else {
+                value = default(TValue);
+                return false;
             }
         }
     }
