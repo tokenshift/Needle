@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="ErrorMode.cs" />
     <Compile Include="IForClause.cs" />
+    <Compile Include="InstanceProvider.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="MissingDependency.cs" />
     <Compile Include="Mode.cs" />

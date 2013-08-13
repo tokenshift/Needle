@@ -13,25 +13,7 @@ namespace Needle {
         }
 
         public void Provide<TImplementation>(Mode mode) where TImplementation : TDependency, new() {
-            var type = typeof (TImplementation);
-
-            switch (mode) {
-                case Mode.Instance:
-                    Constructor = () => new TImplementation();
-                    break;
-                case Mode.Singleton:
-                    Constructor = () => {
-                        if (!_singletons.ContainsKey(type)) {
-                            _singletons[type] = new TImplementation();
-                        }
-                        return (TDependency) _singletons[type];
-                    };
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            Constructor = () => new InstanceProvider().Get<TImplementation>(mode);
         }
-
-        private static readonly Dictionary<Type, object> _singletons = new Dictionary<Type, object>();
     }
 }
