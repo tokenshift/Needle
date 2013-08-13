@@ -43,21 +43,21 @@ namespace Needle {
         /// Returns a single shared instance of the specified type.
         /// </summary>
         private TImplementation GetSingleton<TImplementation>() where TImplementation : new() {
-            TImplementation impl;
+            Weak<TImplementation> impl;
             using (_singletonsLock.Read()) {
-                if (_singletons.TryGet(out impl)) {
-                    return impl;
+                if (_singletons.TryGet(out impl) && impl.IsAlive) {
+                    return impl.Value;
                 }
             }
 
             using (_singletonsLock.Write()) {
-                if (!_singletons.TryGet(out impl)) {
-                    impl = new TImplementation();
+                if (!_singletons.TryGet(out impl) || !impl.IsAlive) {
+                    impl = new Weak<TImplementation>(new TImplementation());
                     _singletons.Add(impl);
                 }
             }
 
-            return impl;
+            return impl.Value;
         }
 
         /// <summary>
