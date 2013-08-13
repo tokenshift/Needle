@@ -28,16 +28,27 @@ until the kernel itself is.
 keeps only a weak reference to the instance, to avoid memory leaks.
 * **Thread** - Instance-per-thread, or thread singleton; a new instance is created
 for each thread that requests the dependency.
+
+### Custom Constructors
+
+The `Provide` method has been overlodaed to also accept a custom constructor function.
+This function will be invoked each time the dependency is requested.
+
+For example:
+
+    kernel.For<IFizzBuzz>().Provide(() => new FizzBuzz(new Foo(), new Bar()));
   
 ## Limitations
 
 Code generation is not permitted on many of the supported platforms, so **Needle**
-CANNOT generate constructor injection code. As a result, every concrete implementation
-must have a public parameterless constructor that **Needle** can call, and needs to
-call `kernel.Get...` for any of its own dependencies. (I guess that makes this service
-location rather than dependency injection? Oh well.) *Future functionality: implement
-constructor injection via reflection, if this can be done with existing platform
-restrictions.*
+CANNOT generate constructor injection code. Consumers can implement constructor
+injection by using the version of the `Provide` method that accepts a function as
+input, and pass the dependencies in a lambda; (see the example under *Custom
+Constructors*). This lambda could include calls to `Kernel.Get` in order to
+handle recursive dependencies.
+
+*Possible future functionality: implement constructor injection via reflection, if
+this can be done with existing platform restrictions.*
 
 There isn't any platform-independent way to determine whether a specific thread is still
 alive, so **Needle** lacks any real instance pooling for thread singletons. The kernel

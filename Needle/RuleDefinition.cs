@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Needle {
     /// <summary>
@@ -14,6 +13,10 @@ namespace Needle {
 
         public void Provide<TImplementation>(Mode mode) where TImplementation : TDependency, new() {
             Constructor = () => new InstanceProvider().Get<TImplementation>(mode);
+        }
+
+        public void Provide(Func<TDependency> constructor) {
+            Constructor = constructor;
         }
     }
 }

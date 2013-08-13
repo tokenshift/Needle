@@ -127,5 +127,18 @@ namespace Needle.Test {
             Assert.AreEqual(1, PersistentBar.Count);
             Assert.AreEqual(2, PersistentFoo.Count);
         }
+
+        [TestMethod]
+        public void TestCustomConstructorInjection() {
+            var kernel = new Kernel();
+
+            kernel.For<IHasDependencies>().Provide(() => new HasDependencies(new Foo(), new Bar()));
+
+            var test = kernel.Get<IHasDependencies>();
+
+            Assert.IsInstanceOfType(test, typeof(HasDependencies));
+            Assert.IsInstanceOfType(((HasDependencies)test).Foo, typeof(Foo));
+            Assert.IsInstanceOfType(((HasDependencies)test).Bar, typeof(Bar));
+        }
     }
 }

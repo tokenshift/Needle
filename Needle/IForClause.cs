@@ -1,9 +1,11 @@
-﻿namespace Needle {
+﻿using System;
+
+namespace Needle {
     /// <summary>
     /// The "for" clause of a dependency registration.
     /// </summary>
     /// <typeparam name="TDependency">The type of the dependency being registered.</typeparam>
-    public interface IForClause<in TDependency> {
+    public interface IForClause<TDependency> {
         /// <summary>
         /// Registers the specific concrete implementation of the dependency.
         /// </summary>
@@ -24,5 +26,15 @@
         /// </remarks>
         void Provide<TImplementation>(Mode mode)
             where TImplementation : TDependency, new();
+
+        /// <summary>
+        /// Registers a custom constructor that will be used to
+        /// satisfy the dependency.
+        /// </summary>
+        /// <param name="constructor">
+        /// A custom constructor that will be invoked each time
+        /// the dependency is requested.
+        /// </param>
+        void Provide(Func<TDependency> constructor);
     }
 }

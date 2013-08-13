@@ -22,4 +22,16 @@
             ++Count;
         }
     }
+
+    public interface IHasDependencies {}
+
+    public class HasDependencies : IHasDependencies {
+        public readonly IFoo Foo;
+        public readonly IBar Bar;
+
+        public HasDependencies(IFoo foo, IBar bar) {
+            Foo = foo;
+            Bar = bar;
+        }
+    }
 }
