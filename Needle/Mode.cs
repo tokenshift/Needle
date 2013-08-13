@@ -12,6 +12,13 @@
 
         /// <summary>
         /// A single instance of the implementation will be shared
+        /// by all requestors, and will not be disposed unless the
+        /// kernel itself is.
+        /// </summary>
+        Persistent,
+
+        /// <summary>
+        /// A single instance of the implementation will be shared
         /// by all requestors.
         /// </summary>
         Singleton,

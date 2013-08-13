@@ -5,6 +5,9 @@ namespace Needle {
     /// Provides instances of a concrete implementation based on
     /// </summary>
     internal class InstanceProvider {
+        private static readonly TypeDictionary _persistentSingletons = new TypeDictionary();
+        private static readonly ReadWriteLock _persistentSingletonsLock = new ReadWriteLock();
+
         private static readonly TypeDictionary _singletons = new TypeDictionary();
         private static readonly ReadWriteLock _singletonsLock = new ReadWriteLock();
 
@@ -23,6 +26,8 @@ namespace Needle {
             switch (mode) {
                 case Mode.Instance:
                     return GetInstance<TImplementation>();
+                case Mode.Persistent:
+                    return GetPersistentSingleton<TImplementation>();
                 case Mode.Singleton:
                     return GetSingleton<TImplementation>();
                 case Mode.Thread:
@@ -37,6 +42,31 @@ namespace Needle {
         /// </summary>
         private TImplementation GetInstance<TImplementation>() where TImplementation : new() {
             return new TImplementation();
+        }
+
+        /// <summary>
+        /// Returns a single shared instance of the specified type
+        /// that will not be garbage collected.
+        /// </summary>
+        private TImplementation GetPersistentSingleton<TImplementation>() where TImplementation : new()
+        {
+            TImplementation impl;
+            using (_persistentSingletonsLock.Read())
+            {
+                if (_persistentSingletons.TryGet(out impl))
+                {
+                    return impl;
+                }
+            }
+
+            using (_persistentSingletonsLock.Write())
+            {
+                if (!_persistentSingletons.TryGet(out impl))
+                {
+                    _persistentSingletons.Add(impl = new TImplementation());
+                }
+                return impl;
+            }
         }
 
         /// <summary>

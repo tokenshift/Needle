@@ -108,5 +108,24 @@ namespace Needle.Test {
             Assert.AreNotSame(foo1, foo2);
             Assert.AreSame(bar1, bar2);
         }
+
+        [TestMethod]
+        public void TestPersistent() {
+            var kernel = new Kernel();
+
+            kernel.For<IFoo>().Provide<PersistentFoo>(Mode.Singleton);
+            kernel.For<IBar>().Provide<PersistentBar>(Mode.Persistent);
+
+            Assert.IsInstanceOfType(kernel.Get<IFoo>(), typeof (PersistentFoo));
+            GC.Collect();
+            Assert.IsInstanceOfType(kernel.Get<IFoo>(), typeof(PersistentFoo));
+
+            Assert.IsInstanceOfType(kernel.Get<IBar>(), typeof(PersistentBar));
+            GC.Collect();
+            Assert.IsInstanceOfType(kernel.Get<IBar>(), typeof(PersistentBar));
+
+            Assert.AreEqual(1, PersistentBar.Count);
+            Assert.AreEqual(2, PersistentFoo.Count);
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace Needle {
         /// replacing any existing value.
         /// </summary>
         public void Add<TValue>(TValue value) {
-            _values.Add(typeof (TValue), value);
+            _values[typeof (TValue)] = value;
         }
 
         /// <summary>
