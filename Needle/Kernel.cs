@@ -12,12 +12,22 @@ namespace Needle {
         /// <remarks>
         /// This kernel is created lazily; only use this
         /// if you don't want to define your own context.
-        /// Not currently thread-safe.
         /// </remarks>
         public static Kernel Current {
-            get { return _current ?? (_current = new Kernel()); }
+            get {
+                using (_currentLock.Read()) {
+                    if (_current != null) {
+                        return _current;
+                    }
+                }
+
+                using (_currentLock.Write()) {
+                    return _current ?? (_current = new Kernel());
+                }
+            }
         }
 
+        private static readonly ReadWriteLock _currentLock = new ReadWriteLock();
         private static Kernel _current;
 
         private readonly Dictionary<Type, object> _rules = new Dictionary<Type, object>();
