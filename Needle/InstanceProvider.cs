@@ -8,6 +8,9 @@ namespace Needle {
         private static readonly TypeDictionary _singletons = new TypeDictionary();
         private static readonly ReadWriteLock _singletonsLock = new ReadWriteLock();
 
+        private static readonly TypeDictionary _threadSingletons = new TypeDictionary();
+        private static readonly ReadWriteLock _threadSingletonsLock = new ReadWriteLock();
+
         /// <summary>
         /// Gets an instance of the specified concrete implementation
         /// using the specified instantiation mode.
@@ -62,7 +65,20 @@ namespace Needle {
         /// that requests one.
         /// </summary>
         private TImplementation GetThreadSingleton<TImplementation>() where TImplementation : new() {
-            throw new NotImplementedException();
+            using (_threadSingletonsLock.Read()) {
+                if (_threadSingletons.ContainsKey<ThreadPool<TImplementation>>()) {
+                    return _threadSingletons.Get<ThreadPool<TImplementation>>().GetInstance();
+                }
+            }
+
+            using (_threadSingletonsLock.Write()) {
+                if (_threadSingletons.ContainsKey<ThreadPool<TImplementation>>()) {
+                    return _threadSingletons.Get<ThreadPool<TImplementation>>().GetInstance();
+                }
+
+                _threadSingletons.Add(new ThreadPool<TImplementation>());
+                return _threadSingletons.Get<ThreadPool<TImplementation>>().GetInstance();
+            }
         }
     }
 }
